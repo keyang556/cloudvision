@@ -21,6 +21,7 @@ lastImageFilePath = os.path.join(tempfile.gettempdir(), "cv_last_image")
 
 
 def _update_models():
+    return True
     need_update = False
     if not os.path.isfile(MODELS_PATH):
         need_update = True
@@ -110,7 +111,7 @@ def piccyBot(
     url = "https://sparklingapps.com/piccybotapi/index.php/chat"
 
     chat_data = {
-        "model": model,
+        # "model": model,
         "user_message": [
             {
                 "role": "user",
