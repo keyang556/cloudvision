@@ -15,10 +15,33 @@ class PBAPIError(Exception):
 
 
 MODELS_PATH = os.path.join(os.path.dirname(__file__), "pb_models.json")
-MODELS_URL = "https://sparklingapps.com/piccybotapi/index.php/chat"
+MODELS_URL = "https://sparklingapps.com/piccybotapi/codepiccy.php"
 _locker = Lock()
+KEY_URL = "https://sparklingapps.com/piccybotapi/index.php/key"
+CHAT_URL = "https://sparklingapps.com/piccybotapi/index.php/chat"
 lastImageFilePath = os.path.join(tempfile.gettempdir(), "cv_last_image")
+_kd = {}
 
+base_headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "PiccyBot/2.45.1 CFNetwork/1498.700.2 Darwin/23.6.0",
+}
+
+def get_key():
+    global _kd
+    if "key" in _kd: return _kd
+    try:
+        http = AdvancedHttpPool().Pool
+        http.headers = base_headers
+        http.headers["Authorization"] = "Bearer piccybot_get_zzaegh"
+        response = http.request("GET", KEY_URL)
+        data = response.json()
+        if "key" in data:
+            _kd = data
+            return data
+    except urllib3.exceptions.MaxRetryError:
+        return {}
+    return {}
 
 def _update_models():
     return True
@@ -32,11 +55,10 @@ def _update_models():
         need_update = time_diff > timedelta(hours=6)
     if not need_update:
         return
+    kd = get_key()
     http = AdvancedHttpPool().Pool
-    http.headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "PiccyBot/2.42.12 CFNetwork/1498.700.2 Darwin/23.6.0",
-    }
+    http.headers = base_headers
+    http.headers["Authorization"] = "Bearer " + kd.get("secret_key", "piccybot_get_zzaegh")
     response = http.request("GET", MODELS_URL)
     data = response.json()
     if (
@@ -74,6 +96,8 @@ def get_models() -> list:
 def get_model(key_or_value) -> list:
     "returns [key, value, index]"
     models = get_models()
+    kd = get_key()
+    if key_or_value == "default": key_or_value = kd.get("Default_model")
     i = -1
     for model in models:
         i += 1
@@ -96,9 +120,10 @@ def piccyBot(
     image: any,
     lang: str = "en",
     prompt: str = "Describe it in as much detail as possible what's in this image?",
-    pbMODEL: str = "openai",
+    pbMODEL: str = "default",
 ):
     model = get_model(pbMODEL)[1]
+    kd = get_key()
     langname = LANGNAMES.get(lang, "English")
     if len(lang) > 3:
         langname = lang.lower().capitalize()
@@ -107,8 +132,6 @@ def piccyBot(
     elif os.path.isfile(lastImageFilePath) and os.path.getsize(lastImageFilePath) > 50:
         with open(lastImageFilePath, "rb") as f:
             image_content = f.read()
-
-    url = "https://sparklingapps.com/piccybotapi/index.php/chat"
 
     chat_data = {
         # "model": model,
@@ -136,11 +159,9 @@ def piccyBot(
     }
 
     http = AdvancedHttpPool().Pool
-    http.headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "PiccyBot/2.42.12 CFNetwork/1498.700.2 Darwin/23.6.0",
-    }
-    response = http.request("POST", url, json=chat_data)
+    http.headers = base_headers
+    http.headers["Authorization"] = "Bearer " + kd.get("secret_key", "piccybot_get_zzaegh")
+    response = http.request("POST", CHAT_URL, json=chat_data)
     data = response.json()
 
     txt = data.get("Text", "")

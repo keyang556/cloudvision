@@ -114,7 +114,7 @@ trtext=boolean(default=False)
 language=string(default={defaultLanguage})
 useMathpix=boolean(default=False)
 mathpixAPIKey=string(default="")
-pbMODEL=string(default="openai")
+pbMODEL=string(default="default")
 """.format(defaultLanguage=getDefaultLanguage())
 )
 
