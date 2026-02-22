@@ -122,8 +122,10 @@ def piccyBot(
     prompt: str = "Describe it in as much detail as possible what's in this image?",
     pbMODEL: str = "default",
 ):
-    model = get_model(pbMODEL)[1]
     kd = get_key()
+    _model = get_model(pbMODEL)
+    if _model: model = _model[1]
+    else: model = kd.get("Default_model")
     langname = LANGNAMES.get(lang, "English")
     if len(lang) > 3:
         langname = lang.lower().capitalize()

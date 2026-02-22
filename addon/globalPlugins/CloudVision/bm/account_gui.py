@@ -11,6 +11,7 @@ if sys.version_info.major == 2:
     import urllib as ur, urllib as up
 elif sys.version_info.major == 3:
     import urllib.request as ur, urllib.parse as up
+    import urllib3
 
 import socket
 
